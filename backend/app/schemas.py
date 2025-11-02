@@ -1,0 +1,165 @@
+
+#schemas.py
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List
+from datetime import datetime
+from enum import Enum
+
+# Borrow Status Enum
+class BorrowStatus(str, Enum):
+    BORROWED = "BORROWED"
+    RETURNED = "RETURNED"
+    OVERDUE = "OVERDUE"
+
+# User Schemas
+class UserBase(BaseModel):
+    username: str
+    email: EmailStr
+    full_name: str
+    student_id: Optional[str] = None
+    role: str = "viewer"
+
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=6)
+
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    student_id: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class User(UserBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class UserWithPassword(User):
+    password_hash: str
+
+# Category Schemas
+class CategoryBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class CategoryCreate(CategoryBase):
+    pass
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+class Category(CategoryBase):
+    id: int
+    created_at: datetime
+    items_count: Optional[int] = 0
+    
+    class Config:
+        from_attributes = True
+
+# Item Schemas
+class ItemBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category_id: int
+    quantity: int = 0
+    available_quantity: int = 0
+    unit: str = "pieces"
+    storage_location: Optional[str] = None
+    condition: str = "good"
+    min_stock_level: int = 5
+    expiry_date: Optional[datetime] = None
+    is_borrowable: bool = True
+
+class ItemCreate(ItemBase):
+    created_by: int
+
+class ItemUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category_id: Optional[int] = None
+    quantity: Optional[int] = None
+    available_quantity: Optional[int] = None
+    unit: Optional[str] = None
+    storage_location: Optional[str] = None
+    condition: Optional[str] = None
+    min_stock_level: Optional[int] = None
+    expiry_date: Optional[datetime] = None
+    is_borrowable: Optional[bool] = None
+    image_url: Optional[str] = None
+
+class Item(ItemBase):
+    id: int
+    image_url: Optional[str] = None
+    created_by: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class ItemWithDetails(Item):
+    category: Optional[Category] = None
+    created_by_user: Optional[User] = None
+
+# Borrow Log Schemas
+class BorrowLogBase(BaseModel):
+    item_id: int
+    user_id: int
+    quantity_borrowed: int
+    expected_return_date: datetime
+    notes: Optional[str] = None
+
+class BorrowLogCreate(BorrowLogBase):
+    admin_id: int
+
+class BorrowLogUpdate(BaseModel):
+    actual_return_date: Optional[datetime] = None
+    status: Optional[str] = None  # Change from BorrowStatus to str for flexibility
+    notes: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+class BorrowLog(BorrowLogBase):
+    id: int
+    admin_id: int
+    borrow_date: datetime
+    actual_return_date: Optional[datetime] = None
+    status: BorrowStatus
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class BorrowLogWithDetails(BorrowLog):
+    item: Optional[Item] = None
+    user: Optional[User] = None
+    admin: Optional[User] = None
+
+# Authentication Schemas
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: User
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+    user_id: Optional[int] = None
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+# Dashboard Stats
+class DashboardStats(BaseModel):
+    total_items: int
+    total_categories: int
+    low_stock_items: int
+    expired_items: int
+    items_for_disposal: int
+    total_borrowed_items: int
+    overdue_borrows: int
+    total_users: int
