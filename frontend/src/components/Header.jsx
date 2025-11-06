@@ -14,16 +14,24 @@ function Header() {
   const location = useLocation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
 
-  const navigation = [
+  // Base navigation for all users
+  const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: FlaskConical },
     { name: 'Items', href: '/items' },
     { name: 'Borrowed', href: '/borrowed' },
-    ...(user?.role === 'admin' ? [
-      { name: 'Categories', href: '/categories' },
-      { name: 'Users', href: '/users' },
-    ] : []),
-    { name: 'Reports', href: '/reports' },
   ]
+
+  // Admin-only navigation items
+  const adminNavigation = [
+    { name: 'Categories', href: '/categories' },
+    { name: 'Users', href: '/users' },
+    { name: 'Reports', href: '/reports' }, // Reports is admin-only
+  ]
+
+  // Combine navigation based on user role
+  const navigation = user?.role === 'admin' 
+    ? [...baseNavigation, ...adminNavigation]
+    : baseNavigation
 
   const isActive = (path) => location.pathname === path
 

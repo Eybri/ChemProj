@@ -16,7 +16,7 @@ function SearchBar({
         <Search className="search-icon" />
         <input
           type="text"
-          placeholder="Search items..."
+          placeholder="Search items by name or description..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="search-input"
@@ -33,7 +33,7 @@ function SearchBar({
       {showFilters && (
         <div className="filters-panel">
           <div className="filters-header">
-            <h3>Filters</h3>
+            <h3>Filter Items</h3>
             <button 
               onClick={() => setShowFilters(false)}
               className="close-filters-btn"
@@ -45,7 +45,7 @@ function SearchBar({
           <div className="filters-grid">
             {availableFilters.category && (
               <div className="filter-group">
-                <label>Category</label>
+                <label>Filter by Category</label>
                 <select
                   value={filters.category || ''}
                   onChange={(e) => onFilterChange('category', e.target.value)}
@@ -57,33 +57,42 @@ function SearchBar({
                     </option>
                   ))}
                 </select>
+                <small className="filter-help-text">
+                  Show items from selected category only
+                </small>
               </div>
             )}
 
             {availableFilters.storageLocation && (
               <div className="filter-group">
-                <label>Storage Location</label>
+                <label>Filter by Storage Location</label>
                 <input
                   type="text"
-                  placeholder="e.g., Cabinet A"
+                  placeholder="e.g., Cabinet A, Shelf B"
                   value={filters.storageLocation || ''}
                   onChange={(e) => onFilterChange('storageLocation', e.target.value)}
                 />
+                <small className="filter-help-text">
+                  Search by storage location
+                </small>
               </div>
             )}
 
             {availableFilters.condition && (
               <div className="filter-group">
-                <label>Condition</label>
+                <label>Filter by Condition</label>
                 <select
                   value={filters.condition || ''}
                   onChange={(e) => onFilterChange('condition', e.target.value)}
                 >
                   <option value="">All Conditions</option>
-                  <option value="good">Good</option>
+                  <option value="good">Good Condition</option>
                   <option value="for_disposal">For Disposal</option>
                   <option value="expired">Expired</option>
                 </select>
+                <small className="filter-help-text">
+                  Show items with selected condition
+                </small>
               </div>
             )}
 
@@ -95,8 +104,11 @@ function SearchBar({
                     checked={filters.lowStock || false}
                     onChange={(e) => onFilterChange('lowStock', e.target.checked)}
                   />
-                  Low Stock Only
+                  Show Low Stock Items Only
                 </label>
+                <small className="filter-help-text">
+                  Items below minimum stock level
+                </small>
               </div>
             )}
           </div>
@@ -109,7 +121,7 @@ function SearchBar({
               }}
               className="clear-filters-btn"
             >
-              Clear All
+              Clear All Filters
             </button>
           </div>
         </div>

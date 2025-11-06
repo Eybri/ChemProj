@@ -1,3 +1,4 @@
+#routes/items.py
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
@@ -17,6 +18,7 @@ def read_items(
     storage_location: Optional[str] = Query(None),
     condition: Optional[str] = Query(None),
     low_stock: Optional[bool] = Query(None),
+    borrowable_only: Optional[bool] = Query(None),  # Added missing parameter
     db: Session = Depends(get_db)
 ):
     items = crud.get_items(
@@ -27,7 +29,8 @@ def read_items(
         category_id=category_id,
         storage_location=storage_location,
         condition=condition,
-        low_stock=low_stock
+        low_stock=low_stock,
+        borrowable_only=borrowable_only  # Pass the parameter
     )
     return items
 
@@ -37,7 +40,6 @@ def read_item(item_id: int, db: Session = Depends(get_db)):
     if db_item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_item
-
 @router.post("/", response_model=schemas.Item)
 async def create_item(
     name: str = Form(...),

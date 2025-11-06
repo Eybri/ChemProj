@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from ..database import get_db
 from .. import schemas, crud
-from ..auth import get_current_admin
+from ..auth import get_current_admin, get_current_user
 
 router = APIRouter()
 
@@ -56,5 +56,12 @@ def update_user(
 
 # Dashboard route - accessible to all authenticated users
 @router.get("/dashboard/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
-    return crud.get_dashboard_stats(db)
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    return crud.get_dashboard_stats(
+        db, 
+        user_id=current_user.id, 
+        user_role=current_user.role
+    )

@@ -65,17 +65,29 @@ class ItemBase(BaseModel):
     name: str
     description: Optional[str] = None
     category_id: int
-    quantity: int = 0
-    available_quantity: int = 0
+    quantity: int = Field(0, ge=0)  # ge=0 means greater than or equal to 0
+    available_quantity: int = Field(0, ge=0)
     unit: str = "pieces"
     storage_location: Optional[str] = None
     condition: str = "good"
-    min_stock_level: int = 5
+    min_stock_level: int = Field(5, ge=0)
     expiry_date: Optional[datetime] = None
     is_borrowable: bool = True
 
-class ItemCreate(ItemBase):
+class ItemCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category_id: int
+    quantity: int = Field(0, ge=0)
+    unit: str = "pieces"
+    storage_location: Optional[str] = None
+    condition: str = "good"
+    min_stock_level: int = Field(5, ge=0)
+    expiry_date: Optional[datetime] = None
+    is_borrowable: bool = True
     created_by: int
+    image_url: Optional[str] = None
+
 
 class ItemUpdate(BaseModel):
     name: Optional[str] = None
@@ -102,9 +114,8 @@ class Item(ItemBase):
         from_attributes = True
 
 class ItemWithDetails(Item):
-    category: Optional[Category] = None
-    created_by_user: Optional[User] = None
-
+    category: Optional['Category'] = None
+    created_by_user: Optional['User'] = None
 # Borrow Log Schemas
 class BorrowLogBase(BaseModel):
     item_id: int

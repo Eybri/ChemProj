@@ -25,6 +25,16 @@ function ProtectedRoute({ children, adminOnly = false }) {
   return children
 }
 
+function PublicRoute({ children }) {
+  const { isAuthenticated } = useAuth()
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" />
+  }
+
+  return children
+}
+
 function AppContent() {
   const { isAuthenticated } = useAuth()
 
@@ -33,7 +43,14 @@ function AppContent() {
       {isAuthenticated && <Header />}
       <main className={isAuthenticated ? 'main-content' : 'main-content-auth'}>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } 
+          />
           <Route 
             path="/dashboard" 
             element={
@@ -77,7 +94,7 @@ function AppContent() {
           <Route 
             path="/reports" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}> {/* Added adminOnly for reports */}
                 <Reports />
               </ProtectedRoute>
             } 

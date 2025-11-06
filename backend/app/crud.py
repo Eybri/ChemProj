@@ -130,9 +130,13 @@ def get_items(
     return query.offset(skip).limit(limit).all()
 
 def create_item(db: Session, item: schemas.ItemCreate):
-    # Set available_quantity same as quantity for new items
+    # Convert Pydantic model to dict
     item_data = item.dict()
+    
+    # Set available_quantity same as quantity for new items
     item_data['available_quantity'] = item_data['quantity']
+    
+    # Create database item - image_url is now included in item_data
     db_item = models.Item(**item_data)
     db.add(db_item)
     db.commit()
@@ -143,13 +147,16 @@ def update_item(db: Session, item_id: int, item_update: schemas.ItemUpdate):
     db_item = get_item(db, item_id)
     if db_item:
         update_data = item_update.dict(exclude_unset=True)
+        
         # If quantity is updated, also update available_quantity
         if 'quantity' in update_data and 'available_quantity' not in update_data:
             quantity_diff = update_data['quantity'] - db_item.quantity
             update_data['available_quantity'] = db_item.available_quantity + quantity_diff
         
+        # Update fields
         for field, value in update_data.items():
             setattr(db_item, field, value)
+        
         db.commit()
         db.refresh(db_item)
     return db_item
@@ -270,7 +277,8 @@ def delete_borrow_log(db: Session, borrow_log_id: int):
     return db_borrow_log
 
 # Dashboard statistics
-def get_dashboard_stats(db: Session):
+def get_dashboard_stats(db: Session, user_id: Optional[int] = None, user_role: Optional[str] = None):
+    # System-wide stats (for admins)
     total_items = db.query(models.Item).count()
     total_categories = db.query(models.Category).count()
     total_users = db.query(models.User).count()
@@ -290,16 +298,35 @@ def get_dashboard_stats(db: Session):
         models.Item.condition == "for_disposal"
     ).count()
     
-    total_borrowed_items = db.query(models.BorrowLog).filter(
-        models.BorrowLog.status == models.BorrowStatus.BORROWED
-    ).count()
-    
-    overdue_borrows = db.query(models.BorrowLog).filter(
-        and_(
-            models.BorrowLog.status == models.BorrowStatus.BORROWED,
-            models.BorrowLog.expected_return_date < datetime.now()
-        )
-    ).count()
+    # Borrow statistics - different logic for admin vs viewer
+    if user_role == "admin":
+        # Admin sees all borrowed items
+        total_borrowed_items = db.query(models.BorrowLog).filter(
+            models.BorrowLog.status == models.BorrowStatus.BORROWED
+        ).count()
+        
+        overdue_borrows = db.query(models.BorrowLog).filter(
+            and_(
+                models.BorrowLog.status == models.BorrowStatus.BORROWED,
+                models.BorrowLog.expected_return_date < datetime.now()
+            )
+        ).count()
+    else:
+        # Viewer sees only their own borrowed items
+        total_borrowed_items = db.query(models.BorrowLog).filter(
+            and_(
+                models.BorrowLog.status == models.BorrowStatus.BORROWED,
+                models.BorrowLog.user_id == user_id
+            )
+        ).count()
+        
+        overdue_borrows = db.query(models.BorrowLog).filter(
+            and_(
+                models.BorrowLog.status == models.BorrowStatus.BORROWED,
+                models.BorrowLog.user_id == user_id,
+                models.BorrowLog.expected_return_date < datetime.now()
+            )
+        ).count()
     
     return {
         "total_items": total_items,
@@ -311,7 +338,6 @@ def get_dashboard_stats(db: Session):
         "total_borrowed_items": total_borrowed_items,
         "overdue_borrows": overdue_borrows
     }
-
 # Add this to crud.py
 def update_overdue_borrows(db: Session):
     """Update status of borrowed items that are past due date"""
