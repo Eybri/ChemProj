@@ -6,11 +6,10 @@ import {
   User, 
   LogOut, 
   Menu,
-  ChevronDown,
-  Bell
+  ChevronDown
 } from 'lucide-react'
 
-function Header({ onMenuToggle }) {
+function Header({ onMenuToggle, isSidebarCollapsed }) {
   const { user, logout } = useAuth()
   const location = useLocation()
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
@@ -19,8 +18,31 @@ function Header({ onMenuToggle }) {
     logout()
   }
 
+  // Get current page title based on route
+  const getPageTitle = () => {
+    const path = location.pathname
+    switch(path) {
+      case '/dashboard':
+        return 'Dashboard'
+      case '/items':
+        return 'Items'
+      case '/borrowed':
+        return 'Borrowed Logs'
+      case '/categories':
+        return 'Categories'
+      case '/users':
+        return 'Users'
+      case '/reports':
+        return 'Reports'
+      case '/profile':
+        return 'Profile'
+      default:
+        return 'Dashboard'
+    }
+  }
+
   return (
-    <header className="header">
+    <header className={`header ${isSidebarCollapsed ? 'header-expanded' : ''}`}>
       <div className="header-container">
         <div className="header-left">
           <button 
@@ -30,36 +52,47 @@ function Header({ onMenuToggle }) {
             <Menu size={24} />
           </button>
           
-          <div className="header-brand">
-            <FlaskConical className="brand-icon" />
-            <span className="brand-text">ChemLab Inventory</span>
-          </div>
+          {/* Show brand icon when sidebar is collapsed */}
+          {isSidebarCollapsed && (
+            <div className="header-brand-collapsed">
+              <FlaskConical className="brand-icon" />
+            </div>
+          )}
+          
+          {/* Page Title - Shows when sidebar is collapsed */}
+          {isSidebarCollapsed && (
+            <div className="page-title">
+              <span>{getPageTitle()}</span>
+            </div>
+          )}
         </div>
 
         <div className="header-actions">
+          {/* Page Title for larger screens when sidebar is expanded */}
+          {!isSidebarCollapsed && (
+            <div className="page-title-desktop">
+              <span>{getPageTitle()}</span>
+            </div>
+          )}
+
           {/* User Profile Dropdown */}
           <div className="user-profile-dropdown">
             <button 
               className="profile-trigger"
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
             >
-<div className="user-avatar">
-  {user?.profile_picture ? (
-    <img 
-      src={`http://localhost:8000${user.profile_picture}`} 
-      alt="Profile" 
-      className="profile-image"
-      style={{
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        borderRadius: '8px'
-      }}
-    />
-  ) : (
-    <User size={20} />
-  )}
-</div>              <div className="user-info">
+              <div className="user-avatar">
+                {user?.profile_picture ? (
+                  <img 
+                    src={`http://localhost:8000${user.profile_picture}`} 
+                    alt="Profile" 
+                    className="profile-image"
+                  />
+                ) : (
+                  <User size={20} />
+                )}
+              </div>
+              <div className="user-info">
                 <span className="user-name">{user?.full_name}</span>
                 <span className="user-role">{user?.role}</span>
               </div>

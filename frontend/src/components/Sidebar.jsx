@@ -9,10 +9,12 @@ import {
   Users,
   BarChart3,
   LayoutDashboard,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 
-function Sidebar({ isOpen, onClose }) {
+function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }) {
   const { user } = useAuth()
   const location = useLocation()
 
@@ -45,15 +47,24 @@ function Sidebar({ isOpen, onClose }) {
       )}
       
       {/* Sidebar */}
-      <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+      <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''} ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <FlaskConical className="brand-icon" />
-            <span className="brand-text">ChemLab Inventory</span>
+            {!isCollapsed && <span className="brand-text">ChemLab Inventory</span>}
           </div>
-          <button className="sidebar-close-btn" onClick={onClose}>
-            <X size={24} />
-          </button>
+          <div className="sidebar-header-actions">
+            <button 
+              className="sidebar-toggle-btn" 
+              onClick={onToggleCollapse}
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
+            <button className="sidebar-close-btn" onClick={onClose}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -65,9 +76,10 @@ function Sidebar({ isOpen, onClose }) {
                 to={item.href}
                 className={`sidebar-link ${isActive(item.href) ? 'active' : ''}`}
                 onClick={onClose}
+                title={isCollapsed ? item.name : ''}
               >
                 <Icon size={20} />
-                <span>{item.name}</span>
+                {!isCollapsed && <span>{item.name}</span>}
               </Link>
             )
           })}
@@ -75,7 +87,7 @@ function Sidebar({ isOpen, onClose }) {
 
         <div className="sidebar-footer">
           <div className="user-role-badge">
-            <span>Role: {user?.role}</span>
+            {!isCollapsed && <span>Role: {user?.role}</span>}
           </div>
         </div>
       </aside>
