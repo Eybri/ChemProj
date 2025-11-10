@@ -21,11 +21,18 @@ class User(Base):
     role = Column(String(20), default="viewer")
     password_hash = Column(String(255))
     is_active = Column(Boolean, default=True)
+    
+    # New profile fields
+    profile_picture = Column(String(255), nullable=True)  # URL to profile picture
+    phone_number = Column(String(20), nullable=True)
+    course = Column(String(100), nullable=True)  # e.g., BS Chemistry, BS Biology
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    items = relationship("Item", back_populates="created_by_user")
-    borrowed_logs = relationship("BorrowLog", foreign_keys="[BorrowLog.user_id]", back_populates="user")
-    admin_processed_logs = relationship("BorrowLog", foreign_keys="[BorrowLog.admin_id]", back_populates="admin")
+    # Cascade delete configuration
+    items = relationship("Item", back_populates="created_by_user", cascade="all, delete-orphan")
+    borrowed_logs = relationship("BorrowLog", foreign_keys="[BorrowLog.user_id]", back_populates="user", cascade="all, delete-orphan")
+    admin_processed_logs = relationship("BorrowLog", foreign_keys="[BorrowLog.admin_id]", back_populates="admin", cascade="all, delete-orphan")
 
 class Category(Base):
     __tablename__ = "categories"
@@ -35,7 +42,8 @@ class Category(Base):
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    items = relationship("Item", back_populates="category")
+    # Cascade delete configuration
+    items = relationship("Item", back_populates="category", cascade="all, delete-orphan")
 
 class Item(Base):
     __tablename__ = "items"
@@ -43,7 +51,7 @@ class Item(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, index=True)
     description = Column(Text)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id", ondelete="CASCADE"), nullable=False)
     quantity = Column(Integer, default=0)
     available_quantity = Column(Integer, default=0)
     unit = Column(String(20), default="pieces")
@@ -53,21 +61,22 @@ class Item(Base):
     min_stock_level = Column(Integer, default=5)
     expiry_date = Column(DateTime, nullable=True)
     is_borrowable = Column(Boolean, default=True)
-    created_by = Column(Integer, ForeignKey("users.id"))
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     category = relationship("Category", back_populates="items")
     created_by_user = relationship("User", back_populates="items")
-    borrow_logs = relationship("BorrowLog", back_populates="item")
+    # Cascade delete configuration
+    borrow_logs = relationship("BorrowLog", back_populates="item", cascade="all, delete-orphan")
 
 class BorrowLog(Base):
     __tablename__ = "borrow_logs"
     
     id = Column(Integer, primary_key=True, index=True)
-    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    admin_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("items.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    admin_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     quantity_borrowed = Column(Integer, nullable=False)
     borrow_date = Column(DateTime(timezone=True), server_default=func.now())
     expected_return_date = Column(DateTime(timezone=True))

@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, get_db
 from . import models, schemas, crud
-from .routes import items, categories, users, borrowed, auth
+from .routes import items, categories, users, borrowed, auth, profile
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -18,12 +18,7 @@ app = FastAPI(
 # CORS middleware - Enhanced configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",  # Vite default port
-        "http://127.0.0.1:5173",
-    ],
+    llow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,7 +35,7 @@ app.include_router(items.router, prefix="/api/items", tags=["items"])
 app.include_router(categories.router, prefix="/api/categories", tags=["categories"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(borrowed.router, prefix="/api/borrowed", tags=["borrowed"])
-
+app.include_router(profile.router, prefix="/api/profile", tags=["profile"])  # Add profile router
 @app.get("/")
 async def root():
     return {"message": "Chemistry Lab Inventory System API"}

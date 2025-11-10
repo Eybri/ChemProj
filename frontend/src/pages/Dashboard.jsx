@@ -36,38 +36,29 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ 
-            fontSize: '2rem', 
-            fontWeight: '700', 
-            color: '#111827',
-            marginBottom: '0.5rem'
-          }}>
-            Dashboard
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '1.125rem' }}>
-            Loading dashboard data...
-          </p>
+      <div className="page text-white">
+        <div className="page-header">
+          <h1 className="text-white">Dashboard</h1>
+        </div>
+        <div className="loading text-white d-flex justify-content-center align-items-center py-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <span className="ms-2">Loading dashboard data...</span>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          fontSize: '2rem', 
-          fontWeight: '700', 
-          color: '#111827',
-          marginBottom: '0.5rem'
-        }}>
-          Dashboard
-        </h1>
-        <p style={{ color: '#6b7280', fontSize: '1.125rem' }}>
-          Welcome back, {user?.full_name}! {user?.role === 'admin' ? "Here's the lab overview." : "Here's your personal overview."}
-        </p>
+    <div className="page text-white">
+      <div className="page-header mb-4">
+        <div className="page-title">
+          <h1 className="mb-2 text-white">Dashboard</h1>
+          <p className="text-light mb-0">
+            Welcome back, {user?.full_name}! {user?.role === 'admin' ? "Here's the lab overview." : "Here's your personal overview."}
+          </p>
+        </div>
       </div>
 
       {/* Render appropriate dashboard based on user role */}

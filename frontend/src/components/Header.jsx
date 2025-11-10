@@ -1,100 +1,96 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { 
   FlaskConical, 
   User, 
   LogOut, 
-  Menu, 
-  X 
+  Menu,
+  ChevronDown,
+  Bell
 } from 'lucide-react'
 
-function Header() {
+function Header({ onMenuToggle }) {
   const { user, logout } = useAuth()
   const location = useLocation()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
 
-  // Base navigation for all users
-  const baseNavigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: FlaskConical },
-    { name: 'Items', href: '/items' },
-    { name: 'Borrowed', href: '/borrowed' },
-  ]
-
-  // Admin-only navigation items
-  const adminNavigation = [
-    { name: 'Categories', href: '/categories' },
-    { name: 'Users', href: '/users' },
-    { name: 'Reports', href: '/reports' }, // Reports is admin-only
-  ]
-
-  // Combine navigation based on user role
-  const navigation = user?.role === 'admin' 
-    ? [...baseNavigation, ...adminNavigation]
-    : baseNavigation
-
-  const isActive = (path) => location.pathname === path
+  const handleLogout = () => {
+    logout()
+  }
 
   return (
     <header className="header">
       <div className="header-container">
-        <div className="header-brand">
-          <FlaskConical className="brand-icon" />
-          <span className="brand-text">ChemLab Inventory</span>
-        </div>
-
-        {/* Desktop Navigation */}
-        <nav className="desktop-nav">
-          {navigation.map((item) => {
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`nav-link ${isActive(item.href) ? 'active' : ''}`}
-              >
-                {Icon && <Icon size={18} />}
-                {item.name}
-              </Link>
-            )
-          })}
-        </nav>
-
-        <div className="header-actions">
-          <div className="user-info">
-            <User size={18} />
-            <span>{user?.full_name} ({user?.role})</span>
-          </div>
-          <button onClick={logout} className="logout-btn">
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
-
-          {/* Mobile menu button */}
+        <div className="header-left">
           <button 
             className="mobile-menu-btn"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={onMenuToggle}
           >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <Menu size={24} />
           </button>
+          
+          <div className="header-brand">
+            <FlaskConical className="brand-icon" />
+            <span className="brand-text">ChemLab Inventory</span>
+          </div>
+        </div>
+
+        <div className="header-actions">
+          {/* User Profile Dropdown */}
+          <div className="user-profile-dropdown">
+            <button 
+              className="profile-trigger"
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+            >
+<div className="user-avatar">
+  {user?.profile_picture ? (
+    <img 
+      src={`http://localhost:8000${user.profile_picture}`} 
+      alt="Profile" 
+      className="profile-image"
+      style={{
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        borderRadius: '8px'
+      }}
+    />
+  ) : (
+    <User size={20} />
+  )}
+</div>              <div className="user-info">
+                <span className="user-name">{user?.full_name}</span>
+                <span className="user-role">{user?.role}</span>
+              </div>
+              <ChevronDown size={16} className={`dropdown-chevron ${isProfileDropdownOpen ? 'rotate' : ''}`} />
+            </button>
+
+            {isProfileDropdownOpen && (
+              <div className="profile-dropdown-menu">
+                <Link 
+                  to="/profile" 
+                  className="dropdown-item"
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                >
+                  <User size={16} />
+                  <span>View Profile</span>
+                </Link>
+                
+                <div className="dropdown-divider"></div>
+                
+                <button 
+                  className="dropdown-item logout-item"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={16} />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      {isMobileMenuOpen && (
-        <div className="mobile-nav">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={`mobile-nav-link ${isActive(item.href) ? 'active' : ''}`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
-      )}
     </header>
   )
 }

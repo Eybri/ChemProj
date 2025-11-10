@@ -59,13 +59,19 @@ export function AuthProvider({ children }) {
     setUser(null)
     setIsAuthenticated(false)
   }
-
+const updateUser = (userData) => {
+  setUser(prevUser => ({
+    ...prevUser,
+    ...userData
+  }))
+}
   const value = {
     user,
     isAuthenticated,
     login,
     logout,
-    loading
+    loading,
+        updateUser // Add this
   }
 
   return (

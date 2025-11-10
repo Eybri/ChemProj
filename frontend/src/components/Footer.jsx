@@ -12,7 +12,7 @@ function Footer() {
         <div className="footer-info">
           <span>TUPT Laboratory Management</span>
           <span>•</span>
-          <span>© 2024 All rights reserved</span>
+          <span>© 2025 All rights reserved</span>
         </div>
       </div>
     </footer>

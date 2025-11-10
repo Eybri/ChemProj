@@ -45,10 +45,13 @@ async def login(login_data: schemas.LoginRequest, db: Session = Depends(get_db))
             "full_name": user.full_name,
             "role": user.role,
             "student_id": user.student_id,
-            "is_active": user.is_active
+            "is_active": user.is_active,
+            # Include new profile fields
+            "profile_picture": user.profile_picture,
+            "phone_number": user.phone_number,
+            "course": user.course
         }
     }
-
 @router.get("/me")
 async def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user

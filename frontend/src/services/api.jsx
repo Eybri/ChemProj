@@ -110,6 +110,10 @@ export const userService = {
   
   updateUser: (id, data) => 
     api.put(`/users/${id}`, data).then(res => res.data),
+  
+  // ADD DELETE FUNCTION
+  deleteUser: (id) => 
+    api.delete(`/users/${id}`).then(res => res.data),
 }
 
 // Dashboard services
@@ -118,4 +122,35 @@ export const dashboardService = {
     api.get('/users/dashboard/stats').then(res => res.data),
 }
 
+// Profile services
+export const profileService = {
+  getMyProfile: () => 
+    api.get('/profile/me').then(res => res.data),
+  
+  updateMyProfile: (data) => 
+    api.put('/profile/me', data).then(res => res.data),
+  
+  uploadProfilePicture: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/profile/me/profile-picture', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(res => res.data)
+  },
+  
+  // Admin-only services
+  getUserProfile: (userId) => 
+    api.get(`/profile/${userId}`).then(res => res.data),
+  
+  updateUserProfile: (userId, data) => 
+    api.put(`/profile/${userId}/profile`, data).then(res => res.data),
+  
+  uploadUserProfilePicture: (userId, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post(`/profile/${userId}/profile-picture`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(res => res.data)
+  }
+}
 export default api

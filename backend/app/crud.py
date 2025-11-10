@@ -5,6 +5,11 @@ from . import models, schemas
 from .auth import get_password_hash
 from typing import List, Optional
 from datetime import datetime
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# User CRUD operations
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 # User CRUD operations
 def get_user(db: Session, user_id: int):
@@ -27,7 +32,11 @@ def create_user(db: Session, user: schemas.UserCreate):
         full_name=user.full_name,
         student_id=user.student_id,
         role=user.role,
-        password_hash=hashed_password
+        password_hash=hashed_password,
+        # New profile fields with default values
+        profile_picture=user.profile_picture,
+        phone_number=user.phone_number,
+        course=user.course
     )
     db.add(db_user)
     db.commit()
@@ -38,12 +47,25 @@ def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate):
     db_user = get_user(db, user_id)
     if db_user:
         update_data = user_update.dict(exclude_unset=True)
+        
+        # Handle password update
+        if 'password' in update_data and update_data['password']:
+            update_data['password_hash'] = get_password_hash(update_data.pop('password'))
+        
         for field, value in update_data.items():
             setattr(db_user, field, value)
+        
         db.commit()
         db.refresh(db_user)
     return db_user
 
+def delete_user(db: Session, user_id: int):
+    db_user = get_user(db, user_id)
+    if db_user:
+        db.delete(db_user)
+        db.commit()
+        return True
+    return False
 # Category CRUD operations
 def get_category(db: Session, category_id: int):
     return db.query(models.Category).filter(models.Category.id == category_id).first()

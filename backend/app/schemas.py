@@ -18,22 +18,57 @@ class UserBase(BaseModel):
     full_name: str
     student_id: Optional[str] = None
     role: str = "viewer"
+    profile_picture: Optional[str] = None
+    phone_number: Optional[str] = None
+    course: Optional[str] = None
 
+# Schema for creating user (includes password)
 class UserCreate(UserBase):
-    password: str = Field(..., min_length=6)
+    password: str
 
+# Schema for updating user (all fields optional)
 class UserUpdate(BaseModel):
+    username: Optional[str] = None
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     student_id: Optional[str] = None
     role: Optional[str] = None
+    password: Optional[str] = None
     is_active: Optional[bool] = None
+    profile_picture: Optional[str] = None
+    phone_number: Optional[str] = None
+    course: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
+# Schema for user response (includes all fields)
 class User(UserBase):
     id: int
     is_active: bool
     created_at: datetime
-    
+    profile_picture: Optional[str] = None
+    phone_number: Optional[str] = None
+    course: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+# Profile-specific schemas
+class ProfileBase(BaseModel):
+    profile_picture: Optional[str] = None
+    phone_number: Optional[str] = None
+    course: Optional[str] = None
+
+class ProfileCreate(ProfileBase):
+    pass
+
+class ProfileUpdate(ProfileBase):
+    pass
+
+class Profile(ProfileBase):
+    user_id: int
+
     class Config:
         from_attributes = True
 

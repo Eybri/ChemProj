@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
-// import './styles/main.css'
+import './index.css'
 
 console.log('React app is starting...') // Debug log
 
